@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI OS v10.0 Online Pro</title>
+
+<!-- Puter.js: API رایگان GPT-4o, Claude, DALL-E بدون کلید -->
+<script src="https://js.puter.com/v2/"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+<style>
+:root {
+  --bg: #0a0a0f;
+  --sidebar: #0f0f17;
+  --card: #16161f;
+  --card-2: #1c1c28;
+  --border: #26263a;
+  --text: #f5f5f7;
+  --muted: #8b8ba7;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --accent: #ec4899;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warn: #f59e0b;
+  --user-bg: linear-gradient(135deg,#6366f1,#8b5cf6);
+  --ai-bg: #16161f;
+  --shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+[data-theme="light"] {
+  --bg: #f7f7fb; --sidebar: #ffffff; --card: #ffffff; --card-2: #f0f0f7;
+  --border: #e4e4ec; --text: #0a0a0f; --muted: #6b7280;
+  --ai-bg: #ffffff;
+  --shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Vazirmatn',sans-serif; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body { background:var(--bg); color:var(--text); display:flex; transition:background .3s; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:10px; }
+button { cursor:pointer; border:none; font-family:inherit; }
+
+/* LAYOUT */
+.app { display:flex; width:100%; height:100%; }
+
+/* SIDEBAR */
+.sidebar { width:290px; background:var(--sidebar); border-inline-start:1px solid var(--border); display:flex; flex-direction:column; transition:.3s; flex-shrink:0; }
+.sidebar.collapsed { margin-inline-start:-290px; }
+.sb-head { padding:18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.logo { font-size:20px; font-weight:900; background:linear-gradient(135deg,var(--primary),var(--accent)); -webkit-background-clip:text; color:transparent; letter-spacing:-.5px; }
+.new-chat { margin:14px; padding:13px; background:var(--user-bg); color:white; border-radius:12px; font-weight:700; font-size:14px; transition:.2s; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(99,102,241,.3); }
+.new-chat:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(99,102,241,.4); }
+.sb-section { padding:8px 12px; }
+.sb-section-title { font-size:11px; color:var(--muted); font-weight:600; margin:8px 4px; text-transform:uppercase; letter-spacing:.5px; }
+.hist-list { flex:1; overflow-y:auto; padding:4px 12px; }
+.hist-item { padding:11px 13px; margin-bottom:3px; border-radius:10px; cursor:pointer; color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; justify-content:space-between; align-items:center; transition:.15s; }
+.hist-item:hover { background:var(--card); color:var(--text); }
+.hist-item.active { background:var(--card); color:var(--text); font-weight:500; }
+.hist-item .del { opacity:0; color:var(--danger); background:none; padding:4px; font-size:14px; transition:.15s; }
+.hist-item:hover .del { opacity:1; }
+.sb-foot { padding:12px; border-top:1px solid var(--border); display:flex; gap:8px; flex-wrap:wrap; }
+.sb-btn { flex:1; min-width:45%; padding:10px; background:var(--card); border:1px solid var(--border); color:var(--muted); border-radius:9px; font-size:12px; transition:.2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+.sb-btn:hover { color:var(--text); border-color:var(--primary); }
+
+/* MAIN */
+.main { flex:1; display:flex; flex-direction:column; min-width:0; position:relative; }
+.topbar { height:58px; background:var(--sidebar); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 16px; gap:10px; z-index:20; flex-shrink:0; }
+.tb-left, .tb-right { display:flex; align-items:center; gap:8px; }
+.icon-btn { width:40px; height:40px; border-radius:10px; background:transparent; color:var(--muted); font-size:18px; transition:.2s; display:flex; align-items:center; justify-content:center; }
+.icon-btn:hover { background:var(--card); color:var(--text); }
+.icon-btn:active { transform:scale(.95); }
+.icon-btn.active { background:var(--primary); color:white; }
+.icon-btn.rec { background:var(--danger); color:white; animation:pulse 1.2s infinite; }
+@keyframes pulse { 50% { opacity:.6; } }
+
+.model-select { background:var(--card); border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; font-size:12px; cursor:pointer; max-width:220px; }
+
+/* CHAT */
+.chat { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:22px; scroll-behavior:smooth; }
+.welcome { max-width:720px; margin:40px auto; text-align:center; padding:40px 20px; }
+.welcome h1 { font-size:32px; margin-bottom:12px; background:linear-gradient(135deg,var(--primary),var(--accent)); -webkit-background-clip:text; color:transparent; font-weight:900; }
+.welcome p { color:var(--muted); font-size:15px; line-height:1.9; margin-bottom:24px; }
+.quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; max-width:640px; margin:0 auto; }
+.quick-card { padding:14px; background:var(--card); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:.2s; font-size:13px; text-align:right; color:var(--text); }
+.quick-card:hover { border-color:var(--primary); transform:translateY(-2px); box-shadow:var(--shadow); }
+.quick-card .ic { font-size:22px; margin-bottom:6px; display:block; }
+
+.msg-row { display:flex; gap:14px; max-width:88%; animation:slide .35s ease-out; }
+.msg-row.user { align-self:flex-end; flex-direction:row-reverse; }
+.avatar { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+.msg-row.ai .avatar { background:linear-gradient(135deg,var(--primary),var(--accent)); color:white; box-shadow:0 4px 12px rgba(99,102,241,.3); }
+.msg-row.user .avatar { background:var(--card-2); border:1px solid var(--border); }
+.bubble { padding:14px 18px; border-radius:16px; font-size:15px; line-height:1.85; word-wrap:break-word; overflow-wrap:break-word; }
+.msg-row.user .bubble { background:var(--user-bg); color:white; border-bottom-left-radius:5px; box-shadow:0 4px 15px rgba(99,102,241,.25); }
+.msg-row.ai .bubble { background:var(--ai-bg); border:1px solid var(--border); border-bottom-right-radius:5px; }
+.msg-row.ai .bubble img.gen-img { max-width:100%; border-radius:10px; margin:10px 0; border:1px solid var(--border); }
+
+.bubble p { margin-bottom:10px; }
+.bubble p:last-child { margin-bottom:0; }
+.bubble pre { background:#0d0d15; padding:14px; border-radius:10px; overflow-x:auto; margin:12px 0; direction:ltr; text-align:left; font-size:13px; border:1px solid var(--border); position:relative; }
+.bubble code { font-family:'Fira Code','Courier New',monospace; font-size:.9em; background:rgba(255,255,255,.08); padding:2px 6px; border-radius:4px; }
+.bubble pre code { background:none; padding:0; color:#e4e4e7; }
+.bubble table { border-collapse:collapse; margin:12px 0; width:100%; font-size:13px; display:block; overflow-x:auto; }
+.bubble th,.bubble td { border:1px solid var(--border); padding:8px 12px; text-align:right; }
+.bubble th { background:rgba(255,255,255,.05); font-weight:600; }
+.bubble a { color:var(--primary); text-decoration:none; }
+.bubble a:hover { text-decoration:underline; }
+.bubble ul, .bubble ol { margin:8px 0 8px 20px; }
+.bubble li { margin-bottom:4px; }
+.bubble h1,.bubble h2,.bubble h3,.bubble h4 { margin:14px 0 8px; }
+.bubble blockquote { border-inline-start:3px solid var(--primary); padding:4px 12px; margin:10px 0; color:var(--muted); background:rgba(99,102,241,.05); border-radius:0 8px 8px 0; }
+.copy-code { position:absolute; top:8px; right:8px; background:rgba(255,255,255,.1); border:1px solid var(--border); color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; opacity:0; transition:.2s; }
+.bubble pre:hover .copy-code { opacity:1; }
+
+.msg-actions { display:flex; gap:6px; margin-top:10px; opacity:0; transition:.2s; }
+.msg-row:hover .msg-actions { opacity:1; }
+.act-btn { background:transparent; border:1px solid var(--border); color:var(--muted); padding:5px 11px; border-radius:7px; font-size:11px; display:flex; align-items:center; gap:5px; transition:.2s; }
+.act-btn:hover { color:var(--text); border-color:var(--primary); }
+
+.typing { display:flex; gap:4px; padding:16px 20px; }
+.typing span { width:8px; height:8px; border-radius:50%; background:var(--primary); animation:bounce 1.4s infinite; }
+.typing span:nth-child(2) { animation-delay:.15s; }
+.typing span:nth-child(3) { animation-delay:.3s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(.5);opacity:.4} 40%{transform:scale(1);opacity:1} }
+@keyframes slide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* INPUT */
+.input-zone { padding:14px; background:var(--sidebar); border-top:1px solid var(--border); flex-shrink:0; }
+.input-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; transition:.2s; box-shadow:var(--shadow); }
+.input-box:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,.15); }
+.chips { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; min-height:0; }
+.chip { background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.25); padding:5px 12px; border-radius:16px; font-size:11px; display:flex; align-items:center; gap:6px; white-space:nowrap; color:var(--primary); font-weight:500; }
+.chip img { width:24px; height:24px; border-radius:4px; object-fit:cover; }
+.chip button { background:none; color:var(--muted); font-size:14px; padding:0 2px; }
+.chip button:hover { color:var(--danger); }
+.inp-row { display:flex; gap:8px; align-items:flex-end; }
+textarea { flex:1; background:transparent; border:none; color:var(--text); resize:none; max-height:180px; min-height:26px; padding:6px 8px; font-size:15px; line-height:1.6; font-family:inherit; }
+textarea::placeholder { color:var(--muted); }
+.send-btn { width:42px; height:42px; border-radius:12px; background:var(--user-bg); color:white; font-size:18px; flex-shrink:0; transition:.2s; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(99,102,241,.3); }
+.send-btn:hover:not(:disabled) { transform:scale(1.05); }
+.send-btn:disabled { opacity:.4; cursor:not-allowed; }
+.foot-info { text-align:center; font-size:10px; color:var(--muted); margin-top:8px; }
+
+/* MODAL */
+.modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:.3s; backdrop-filter:blur(5px); padding:15px; }
+.modal-ov.active { opacity:1; pointer-events:auto; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:18px; width:100%; max-width:560px; max-height:88vh; overflow-y:auto; padding:26px; box-shadow:var(--shadow); }
+.modal h2 { font-size:19px; margin-bottom:18px; display:flex; align-items:center; gap:10px; }
+.m-close { background:var(--card-2); color:var(--muted); width:32px; height:32px; border-radius:8px; }
+.set-row { margin-bottom:18px; }
+.set-row label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; font-weight:500; }
+.set-row input[type="text"], .set-row input[type="password"], .set-row select { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:11px 13px; border-radius:10px; font-size:14px; transition:.2s; font-family:inherit; }
+.set-row input:focus, .set-row select:focus { border-color:var(--primary); }
+.range-v { float:left; color:var(--primary); font-weight:700; font-size:12px; }
+.hint { font-size:11px; color:var(--muted); margin-top:5px; line-height:1.6; }
+.btn-row { display:flex; gap:8px; margin-top:20px; }
+.btn-p { flex:1; padding:12px; background:var(--user-bg); color:white; border-radius:10px; font-weight:600; font-size:14px; }
+.btn-g { flex:1; padding:12px; background:var(--card-2); border:1px solid var(--border); color:var(--text); border-radius:10px; font-weight:500; }
+.btn-d { background:var(--danger); color:white; padding:12px; border-radius:10px; font-weight:600; width:100%; margin-top:8px; }
+
+/* TOAST */
+.toasts { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; pointer-events:none; max-width:90%; }
+.toast { background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 18px; border-radius:12px; font-size:13px; box-shadow:var(--shadow); opacity:0; transform:translateY(15px); transition:.3s; display:flex; align-items:center; gap:9px; pointer-events:auto; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.ok { border-color:var(--success); }
+.toast.err { border-color:var(--danger); }
+.toast.wrn { border-color:var(--warn); }
+
+/* PROGRESS */
+.progress { position:fixed; top:0; left:0; height:2px; background:linear-gradient(90deg,var(--primary),var(--accent)); width:0; z-index:400; transition:width .3s; box-shadow:0 0 10px var(--primary); }
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar { position:fixed; inset-inline-end:0; top:0; height:100%; box-shadow:-10px 0 30px rgba(0,0,0,.5); width:85%; max-width:320px; z-index:50; }
+  .sidebar.collapsed { margin:0; transform:translateX(100%); }
+  [dir="rtl"] .sidebar.collapsed { transform:translateX(-100%); }
+  .msg-row { max-width:95%; }
+  .chat { padding:16px 12px; }
+  .welcome h1 { font-size:24px; }
+  .welcome { padding:20px 10px; margin:20px auto; }
+}
+
+input[type="file"] { display:none; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <div class="logo">AI OS v10</div>
+      <button class="icon-btn" onclick="UI.toggleSidebar()" style="width:34px;height:34px;font-size:15px;">✕</button>
+    </div>
+    <button class="new-chat" onclick="App.newChat()">+ گفتگوی جدید</button>
+    
+    <div class="sb-section">
+      <div class="sb-section-title">ابزارها</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button class="sb-btn" onclick="Tools.imageGen()">🎨 تولید تصویر</button>
+        <button class="sb-btn" onclick="Tools.calculator()">🔢 ماشین حساب</button>
+        <button class="sb-btn" onclick="Tools.translate()">🌐 مترجم</button>
+        <button class="sb-btn" onclick="Tools.summarize()">📝 خلاصه‌ساز</button>
+        <button class="sb-btn" onclick="Tools.searchWeb()">🔍 جستجوی وب</button>
+        <button class="sb-btn" onclick="Tools.codeRun()">💻 اجرای کد</button>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-title">تاریخچه</div>
+    </div>
+    <div class="hist-list" id="histList"></div>
+
+    <div class="sb-foot">
+      <button class="sb-btn" onclick="UI.openModal('settings')">⚙️ تنظیمات</button>
+      <button class="sb-btn" onclick="App.exportChat()">📤 خروجی</button>
+      <button class="sb-btn" onclick="UI.openModal('profile')">👤 پروفایل</button>
+      <button class="sb-btn" onclick="App.exportAll()">💾 پشتیبان</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="icon-btn" onclick="UI.toggleSidebar()">☰</button>
+        <select class="model-select" id="modelSel" onchange="App.setModel(this.value)">
+          <option value="gpt-4o-mini">GPT-4o Mini (سریع)</option>
+          <option value="gpt-4o">GPT-4o (هوشمند)</option>
+          <option value="claude-sonnet">Claude Sonnet</option>
+          <option value="gpt-5-nano">GPT-5 Nano</option>
+          <option value="o3-mini">o3-mini (استدلال)</option>
+        </select>
+      </div>
+      <div class="tb-right">
+        <button class="icon-btn" onclick="UI.toggleTheme()" id="themeBtn" title="تم">🌙</button>
+        <button class="icon-btn" onclick="App.exportPDF()" title="PDF">📄</button>
+        <button class="icon-btn" onclick="App.clearChat()" title="پاک کردن">🗑️</button>
+      </div>
+    </div>
+
+    <div class="chat" id="chat"></div>
+
+    <div class="input-zone">
+      <div class="input-box">
+        <div class="chips" id="chips"></div>
+        <div class="inp-row">
+          <input type="file" id="fileIn" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.md,.json,.csv,.zip,.html,.css,.js,.py,.java,.cpp,.c,.ts,image/*">
+          <button class="icon-btn" onclick="document.getElementById('fileIn').click()" title="فایل">📎</button>
+          <textarea id="inp" rows="1" placeholder="پیام بنویسید... (Shift+Enter = خط جدید)"></textarea>
+          <button class="icon-btn" id="micBtn" title="صوتی">🎤</button>
+          <button class="icon-btn" id="ttsBtn" title="خواندن خودکار">🔊</button>
+          <button class="send-btn" id="sendBtn" onclick="App.send()">➤</button>
+        </div>
+      </div>
+      <div class="foot-info">AI OS v10.0 • Online • GPT-4o / Claude رایگان از Puter.js</div>
+    </div>
+  </main>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-ov" id="m-settings">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2>⚙️ تنظیمات</h2>
+      <button class="m-close" onclick="UI.closeModal('settings')">✕</button>
+    </div>
+    <div class="set-row">
+      <label>دستیار (System Prompt)</label>
+      <select id="sysMode">
+        <option value="assistant">🤖 دستیار عمومی</option>
+        <option value="coder">💻 برنامه‌نویس حرفه‌ای</option>
+        <option value="writer">✍️ نویسنده خلاق</option>
+        <option value="translator">🌐 مترجم</option>
+        <option value="analyst">📊 تحلیلگر</option>
+        <option value="tutor">🎓 معلم خصوصی</option>
+        <option value="custom">🔧 دلخواه</option>
+      </select>
+    </div>
+    <div class="set-row" id="customSysRow" style="display:none;">
+      <label>System Prompt دلخواه</label>
+      <textarea id="customSys" style="width:100%;min-height:80px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div class="set-row">
+      <label>خلاقیت (Temperature): <span class="range-v" id="tempV">0.7</span></label>
+      <input type="range" min="0" max="2" step="0.1" value="0.7" id="tempR">
+    </div>
+    <div class="set-row">
+      <label>حداکثر توکن: <span class="range-v" id="tokV">2000</span></label>
+      <input type="range" min="200" max="8000" step="200" value="2000" id="tokR">
+    </div>
+    <div class="set-row">
+      <label>خواندن خودکار پاسخ‌ها (TTS)</label>
+      <select id="autoTTS">
+        <option value="0">خاموش</option>
+        <option value="1">روشن</option>
+      </select>
+    </div>
+    <div class="set-row">
+      <label>زبان OCR</label>
+      <select id="ocrLang">
+        <option value="fas+eng">فارسی + انگلیسی</option>
+        <option value="fas">فارسی</option>
+        <option value="eng">انگلیسی</option>
+        <option value="ara">عربی</option>
+      </select>
+    </div>
+    <button class="btn-p" onclick="Settings.save()">ذخیره</button>
+    <button class="btn-d" onclick="App.resetAll()">🗑️ پاکسازی همه داده‌ها</button>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-ov" id="m-profile">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2>👤 پروفایل</h2>
+      <button class="m-close" onclick="UI.closeModal('profile')">✕</button>
+    </div>
+    <div class="set-row">
+      <label>نام شما</label>
+      <input type="text" id="userName" placeholder="نام شما">
+    </div>
+    <div class="set-row">
+      <label>شغل / تخصص</label>
+      <input type="text" id="userJob" placeholder="مثلاً: برنامه‌نویس">
+    </div>
+    <div class="set-row">
+      <label>درباره شما (برای پاسخ بهتر)</label>
+      <textarea id="userBio" style="width:100%;min-height:70px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-family:inherit;resize:vertical;" placeholder="اطلاعاتی که می‌خواهید AI درباره شما بداند..."></textarea>
+    </div>
+    <button class="btn-p" onclick="Profile.save()">ذخیره</button>
+  </div>
+</div>
+
+<!-- IMAGE GEN MODAL -->
+<div class="modal-ov" id="m-imggen">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2>🎨 تولید تصویر با AI</h2>
+      <button class="m-close" onclick="UI.closeModal('imggen')">✕</button>
+    </div>
+    <div class="set-row">
+      <label>توضیح تصویر (به انگلیسی بهتر است)</label>
+      <textarea id="imgPrompt" style="width:100%;min-height:90px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-family:inherit;resize:vertical;" placeholder="A futuristic city at sunset, cinematic, 8k"></textarea>
+    </div>
+    <div class="set-row">
+      <label>مدل</label>
+      <select id="imgModel">
+        <option value="dall-e-3">DALL-E 3 (کیفیت بالا)</option>
+        <option value="stable-diffusion-xl">Stable Diffusion XL</option>
+        <option value="flux">Flux</option>
+      </select>
+    </div>
+    <button class="btn-p" id="imgGenBtn" onclick="Tools.generateImage()">🎨 تولید</button>
+    <div id="imgResult" style="margin-top:15px;"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AI OS v10.0 - COMPLETE ENGINE
+   Online AI via Puter.js (Free, No API Key)
+═══════════════════════════════════════════ */
+
+const SYSTEMS = {
+  assistant: "تو یک دستیار هوشمند، دقیق و مودب هستی. به فارسی پاسخ بده مگر اینکه کاربر زبان دیگری بخواهد. پاسخ‌ها باید ساختاریافته، دقیق و کمک‌کننده باشند.",
+  coder: "تو یک برنامه‌نویس ارشد Full-Stack با ۲۰ سال تجربه هستی. کدها را با توضیحات فارسی، کامنت‌گذاری شده، تمیز و با بهترین الگوها بنویس. همیشه زبان برنامه‌نویسی را در بلوک کد مشخص کن.",
+  writer: "تو یک نویسنده خلاق فارسی‌زبان هستی. داستان، شعر، مقاله و محتوای خلاقانه با نثر زیبا و ادبی تولید می‌کنی.",
+  translator: "تو یک مترجم حرفه‌ای چندزبانه هستی. متن را به بهترین شکل ترجمه می‌کنی و نکات فرهنگی را رعایت می‌کنی.",
+  analyst: "تو یک تحلیلگر داده و متخصص آمار هستی. داده‌ها را عمیق تحلیل می‌کنی و نمودار و جدول ارائه می‌دهی.",
+  tutor: "تو یک معلم خصوصی صبور هستی. مفاهیم را ساده و مرحله به مرحله با مثال توضیح می‌دهی.",
+  custom: ""
+};
+
+const S = {
+  chats: [],
+  currentId: null,
+  files: [],
+  settings: JSON.parse(localStorage.getItem('ai_settings_v10') || '{}'),
+  profile: JSON.parse(localStorage.getItem('ai_profile_v10') || '{}'),
+  theme: localStorage.getItem('ai_theme_v10') || 'dark',
+  model: localStorage.getItem('ai_model_v10') || 'gpt-4o-mini',
+  ttsOn: false,
+  gen: false,
+  ocrWorker: null
+};
+
+// Defaults
+S.settings = Object.assign({
+  temperature: 0.7, maxTokens: 2000, mode: 'assistant', customSys: '',
+  autoTTS: 0, ocrLang: 'fas+eng'
+}, S.settings);
+
+// ═════════ DB (IndexedDB) ═════════
+const DB = {
+  db: null,
+  async init() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('AIOS_v10', 1);
+      r.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats', { keyPath: 'id' });
+        if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' });
+      };
+      r.onsuccess = e => { DB.db = e.target.result; res(); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  tx(store, mode='readonly') { return DB.db.transaction(store, mode).objectStore(store); },
+  async all(store) { return new Promise(r => { const q = DB.tx(store).getAll(); q.onsuccess = () => r(q.result); }); },
+  async put(store, data) { return new Promise(r => { const t = DB.db.transaction(store, 'readwrite'); t.objectStore(store).put(data); t.oncomplete = () => r(); }); },
+  async del(store, id) { return new Promise(r => { const t = DB.db.transaction(store, 'readwrite'); t.objectStore(store).delete(id); t.oncomplete = () => r(); }); },
+  async clear(store) { return new Promise(r => { const t = DB.db.transaction(store, 'readwrite'); t.objectStore(store).clear(); t.oncomplete = () => r(); }); }
+};
+
+// ═════════ UI ═════════
+const UI = {
+  $(id) { return document.getElementById(id); },
+  
+  toast(msg, type='') {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    this.$('toasts').appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3200);
+  },
+  
+  progress(pct) {
+    const el = this.$('progress');
+    el.style.width = pct + '%';
+    if (pct >= 100) setTimeout(() => el.style.width = '0', 500);
+  },
+  
+  toggleSidebar() { this.$('sidebar').classList.toggle('collapsed'); },
+  closeSidebarMobile() { if (window.innerWidth <= 768) this.$('sidebar').classList.add('collapsed'); },
+  
+  openModal(name) {
+    this.$('m-' + name).classList.add('active');
+    if (name === 'settings') Settings.load();
+    if (name === 'profile') Profile.load();
+  },
+  closeModal(name) { this.$('m-' + name).classList.remove('active'); },
+  
+  toggleTheme() {
+    S.theme = S.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('ai_theme_v10', S.theme);
+    this.applyTheme();
+  },
+  applyTheme() {
+    document.documentElement.setAttribute('data-theme', S.theme);
+    this.$('themeBtn').textContent = S.theme === 'dark' ? '🌙' : '☀️';
+  },
+  
+  renderHistory() {
+    const list = this.$('histList');
+    list.innerHTML = '';
+    if (!S.chats.length) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">هنوز گفتگویی نیست</div>';
+      return;
+    }
+    S.chats.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'hist-item' + (c.id === S.currentId ? ' active' : '');
+      el.innerHTML = `<span>${UI.escape(c.title)}</span><button class="del" onclick="event.stopPropagation();App.deleteChat('${c.id}')">🗑️</button>`;
+      el.onclick = () => App.loadChat(c.id);
+      list.appendChild(el);
+    });
+  },
+  
+  escape(s) {
+    const div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+  },
+  
+  renderChat(chat) {
+    const area = this.$('chat');
+    area.innerHTML = '';
+    if (!chat.messages || !chat.messages.length) {
+      area.innerHTML = this.welcomeHTML();
+      this.bindQuickCards();
+      return;
+    }
+    chat.messages.forEach(m => this.addMsg(m.role, m.content, m.image, false));
+    this.bindCodeCopy();
+  },
+  
+  welcomeHTML() {
+    return `
+      <div class="welcome">
+        <h1>👋 سلام ${UI.escape(S.profile.name || 'دوست')}</h1>
+        <p>من دستیار هوشمند آنلاین تو هستم. GPT-4o و Claude رایگان، بدون نیاز به API Key.</p>
+        <div class="quick-grid">
+          <div class="quick-card" data-q="یک داستان کوتاه درباره سفر در زمان بنویس"><span class="ic">📖</span>داستان کوتاه بنویس</div>
+          <div class="quick-card" data-q="یک تابع JavaScript برای مرتب‌سازی آرایه بنویس"><span class="ic">💻</span>کد بنویس</div>
+          <div class="quick-card" data-q="پایتخت کشورهای اروپایی را در جدول نشان بده"><span class="ic">🌍</span>جدول اطلاعات</div>
+          <div class="quick-card" data-q="تفاوت React و Vue چیست؟"><span class="ic">🤔</span>مقایسه تکنولوژی</div>
+          <div class="quick-card" data-q="یک شعر عاشقانه فارسی بنویس"><span class="ic">💝</span>شعر فارسی</div>
+          <div class="quick-card" data-q="چطور یک استارتاپ موفق راه بیندازم؟"><span class="ic">🚀</span>مشاوره کسب‌وکار</div>
+          <div class="quick-card" data-q="ترجمه کن: The future belongs to those who believe in the beauty of their dreams"><span class="ic">🌐</span>ترجمه</div>
+          <div class="quick-card" data-q="10 ایده پروژه برنامه‌نویسی برای مبتدی پیشنهاد بده"><span class="ic">💡</span>ایده پروژه</div>
+        </div>
+      </div>
+    `;
+  },
+  
+  bindQuickCards() {
+    document.querySelectorAll('.quick-card').forEach(c => {
+      c.onclick = () => {
+        this.$('inp').value = c.dataset.q;
+        App.send();
+      };
+    });
+  },
+  
+  addMsg(role, content, image = null, animate = true) {
+    const area = this.$('chat');
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + role;
+    const av = role === 'user' ? '👤' : '🤖';
+    let html = '';
+    if (image) html += `<img src="${image}" class="gen-img" onclick="window.open(this.src)">`;
+    html += DOMPurify.sanitize(marked.parse(content || ''));
+    row.innerHTML = `
+      <div class="avatar">${av}</div>
+      <div class="bubble">${html}</div>
+    `;
+    if (role === 'ai') {
+      const actions = document.createElement('div');
+      actions.className = 'msg-actions';
+      actions.innerHTML = `
+        <button class="act-btn" onclick="UI.copyText(this)">📋 کپی</button>
+        <button class="act-btn" onclick="UI.speak(this)">🔊 خواندن</button>
+        <button class="act-btn" onclick="UI.regenerate(this)">🔄 بازتولید</button>
+      `;
+      row.querySelector('.bubble').appendChild(actions);
+    } else {
+      const actions = document.createElement('div');
+      actions.className = 'msg-actions';
+      actions.innerHTML = `<button class="act-btn" onclick="UI.copyText(this)">📋 کپی</button>`;
+      row.querySelector('.bubble').appendChild(actions);
+    }
+    area.appendChild(row);
+    area.scrollTop = area.scrollHeight;
+    this.bindCodeCopy();
+    return row;
+  },
+  
+  bindCodeCopy() {
+    document.querySelectorAll('.bubble pre').forEach(pre => {
+      if (pre.querySelector('.copy-code')) return;
+      const btn = document.createElement('button');
+      btn.className = 'copy-code';
+      btn.textContent = 'Copy';
+      btn.onclick = () => {
+        navigator.clipboard.writeText(pre.innerText.replace('Copy', '').trim());
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      };
+      pre.appendChild(btn);
+    });
+    // highlight
+    if (window.hljs) document.querySelectorAll('.bubble pre code').forEach(el => { try { hljs.highlightElement(el); } catch(e){} });
+  },
+  
+  addTyping() {
+    const area = this.$('chat');
+    const row = document.createElement('div');
+    row.className = 'msg-row ai';
+    row.id = 'typing-row';
+    row.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+    area.appendChild(row);
+    area.scrollTop = area.scrollHeight;
+  },
+  
+  removeTyping() {
+    const el = this.$('typing-row');
+    if (el) el.remove();
+  },
+  
+  addStreamPlaceholder() {
+    const area = this.$('chat');
+    const row = document.createElement('div');
+    row.className = 'msg-row ai';
+    row.id = 'stream-row';
+    row.innerHTML = `
+      <div class="avatar">🤖</div>
+      <div class="bubble"><span id="stream-text"></span><span style="animation:pulse 1s infinite;">▋</span>
+        <div class="msg-actions" style="opacity:1;">
+          <button class="act-btn" onclick="UI.copyText(this)">📋 کپی</button>
+          <button class="act-btn" onclick="UI.speak(this)">🔊 خواندن</button>
+        </div>
+      </div>
+    `;
+    area.appendChild(row);
+    area.scrollTop = area.scrollHeight;
+  },
+  
+  updateStream(text) {
+    const el = this.$('stream-text');
+    if (el) {
+      el.innerHTML = DOMPurify.sanitize(marked.parse(text));
+      this.$('chat').scrollTop = this.$('chat').scrollHeight;
+    }
+  },
+  
+  finalizeStream(text) {
+    const row = this.$('stream-row');
+    if (row) {
+      row.removeAttribute('id');
+      const bubble = row.querySelector('.bubble');
+      const actions = bubble.querySelector('.msg-actions');
+      bubble.innerHTML = DOMPurify.sanitize(marked.parse(text));
+      bubble.appendChild(actions);
+      actions.innerHTML = `
+        <button class="act-btn" onclick="UI.copyText(this)">📋 کپی</button>
+        <button class="act-btn" onclick="UI.speak(this)">🔊 خواندن</button>
+        <button class="act-btn" onclick="UI.regenerate(this)">🔄 بازتولید</button>
+      `;
+      this.bindCodeCopy();
+    }
+  },
+  
+  copyText(btn) {
+    const bubble = btn.closest('.bubble');
+    const text = bubble.innerText.replace(/📋 کپی|🔊 خواندن|🔄 بازتولید/g, '').trim();
+    navigator.clipboard.writeText(text);
+    this.toast('کپی شد ✓', 'ok');
+  },
+  
+  speak(btn) {
+    const bubble = btn.closest('.bubble');
+    const text = bubble.innerText.replace(/📋 کپی|🔊 خواندن|🔄 بازتولید|Copy/g, '').trim();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'fa-IR';
+    u.rate = 1;
+    u.pitch = 1;
+    const voices = speechSynthesis.getVoices();
+    const fa = voices.find(v => v.lang.includes('fa') || v.lang.includes('ar'));
+    if (fa) u.voice = fa;
+    speechSynthesis.speak(u);
+    this.toast('در حال خواندن...', 'ok');
+  },
+  
+  regenerate(btn) {
+    const chat = App.getCurrent();
+    if (!chat || chat.messages.length < 2) return;
+    // find last user message
+    for (let i = chat.messages.length - 1; i >= 0; i--) {
+      if (chat.messages[i].role === 'user') {
+        // Remove last AI message
+        if (chat.messages[i+1]?.role === 'ai') {
+          chat.messages.pop();
+          DB.put('chats', chat);
+          UI.renderChat(chat);
+        }
+        UI.$('inp').value = chat.messages[i].content;
+        App.send();
+        return;
+      }
+    }
+  }
+};
+
+// ═════════ APP ═════════
+const App = {
+  async init() {
+    await DB.init();
+    S.chats = await DB.all('chats');
+    S.chats.sort((a, b) => b.ts - a.ts);
+    
+    UI.applyTheme();
+    UI.$('modelSel').value = S.model;
+    UI.$('ttsBtn').classList.toggle('active', S.settings.autoTTS === 1);
+    UI.renderHistory();
+    
+    // Setup input
+    const inp = UI.$('inp');
+    inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); App.send(); } });
+    
+    // File input
+    UI.$('fileIn').addEventListener('change', e => Files.handle(e.target.files));
+    
+    // Voice
+    Voice.init();
+    UI.$('micBtn').onclick = () => Voice.toggle();
+    UI.$('ttsBtn').onclick = () => {
+      S.settings.autoTTS = S.settings.autoTTS === 1 ? 0 : 1;
+      UI.$('ttsBtn').classList.toggle('active', S.settings.autoTTS === 1);
+      Settings.persist();
+      UI.toast(S.settings.autoTTS ? 'خواندن خودکار فعال' : 'خواندن خودکار غیرفعال', 'ok');
+    };
+    
+    // Settings events
+    UI.$('sysMode').onchange = () => { UI.$('customSysRow').style.display = UI.$('sysMode').value === 'custom' ? 'block' : 'none'; };
+    UI.$('tempR').oninput = e => UI.$('tempV').textContent = e.target.value;
+    UI.$('tokR').oninput = e => UI.$('tokV').textContent = e.target.value;
+    
+    // Click outside modal
+    document.querySelectorAll('.modal-ov').forEach(m => {
+      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+    });
+    
+    // Load last or new
+    if (S.chats.length > 0) this.loadChat(S.chats[0].id);
+    else this.newChat();
+    
+    // Mobile: close sidebar on chat load
+    if (window.innerWidth <= 768) UI.$('sidebar').classList.add('collapsed');
+    
+    UI.toast('آماده! GPT-4o رایگان فعال است', 'ok');
+  },
+  
+  setModel(m) {
+    S.model = m;
+    localStorage.setItem('ai_model_v10', m);
+    UI.toast('مدل: ' + m, 'ok');
+  },
+  
+  async newChat() {
+    const chat = { id: 'c_' + Date.now(), title: 'گفتگوی جدید', messages: [], ts: Date.now() };
+    S.chats.unshift(chat);
+    S.currentId = chat.id;
+    S.files = [];
+    UI.renderChips();
+    await DB.put('chats', chat);
+    UI.renderHistory();
+    UI.renderChat(chat);
+    UI.closeSidebarMobile();
+  },
+  
+  async loadChat(id) {
+    S.currentId = id;
+    S.files = [];
+    UI.renderChips();
+    const chat = S.chats.find(c => c.id === id);
+    UI.renderHistory();
+    UI.renderChat(chat);
+    UI.closeSidebarMobile();
+  },
+  
+  async deleteChat(id) {
+    if (!confirm('این گفتگو پاک شود؟')) return;
+    await DB.del('chats', id);
+    S.chats = S.chats.filter(c => c.id !== id);
+    if (S.currentId === id) {
+      if (S.chats.length) this.loadChat(S.chats[0].id);
+      else this.newChat();
+    } else UI.renderHistory();
+  },
+  
+  getCurrent() { return S.chats.find(c => c.id === S.currentId); },
+  
+  async clearChat() {
+    if (!confirm('پیام‌های این گفتگو پاک شود؟')) return;
+    const chat = this.getCurrent();
+    chat.messages = [];
+    chat.title = 'گفتگوی جدید';
+    await DB.put('chats', chat);
+    UI.renderChat(chat);
+    UI.renderHistory();
+  },
+  
+  async send() {
+    const inp = UI.$('inp');
+    const text = inp.value.trim();
+    if (!text && S.files.length === 0) return;
+    if (S.gen) return;
+    
+    const chat = this.getCurrent();
+    if (!chat) return;
+    
+    // Add user msg
+    const userMsg = { role: 'user', content: text, ts: Date.now() };
+    chat.messages.push(userMsg);
+    
+    // Attach file content
+    let fileContext = '';
+    if (S.files.length > 0) {
+      fileContext = '\n\n=== UPLOADED FILES ===\n' + S.files.map(f => 
+        `\n--- ${f.name} (${f.type}) ---\n${f.content.substring(0, 8000)}`
+      ).join('\n');
+      S.files = [];
+      UI.renderChips();
+    }
+    
+    if (text) UI.addMsg('user', text);
+    else UI.addMsg('user', '📎 فایل ارسال شد');
+    
+    // Auto title
+    if (chat.messages.length === 1 && text) {
+      chat.title = text.substring(0, 40) + (text.length > 40 ? '...' : '');
+      UI.renderHistory();
+    }
+    
+    inp.value = '';
+    inp.style.height = 'auto';
+    await DB.put('chats', chat);
+    
+    // Generate AI response
+    S.gen = true;
+    UI.$('sendBtn').disabled = true;
+    UI.addStreamPlaceholder();
+    
+    try {
+      const sysPrompt = this.buildSystemPrompt();
+      const messages = [
+        { role: 'system', content: sysPrompt },
+        ...chat.messages.slice(-20).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content })),
+      ];
+      // Append file context to last message
+      if (fileContext && messages.length > 1) {
+        messages[messages.length - 1].content += fileContext;
+      }
+      
+      const response = await puter.ai.chat(messages, {
+        model: S.model,
+        stream: true,
+        temperature: parseFloat(S.settings.temperature),
+        max_tokens: parseInt(S.settings.maxTokens)
+      });
+      
+      let fullText = '';
+      for await (const part of response) {
+        if (part?.text) {
+          fullText += part.text;
+          UI.updateStream(fullText);
+        }
+      }
+      
+      UI.finalizeStream(fullText);
+      chat.messages.push({ role: 'ai', content: fullText, ts: Date.now() });
+      await DB.put('chats', chat);
+      
+      if (S.settings.autoTTS === 1) {
+        setTimeout(() => speechSynthesis.speak(new SpeechSynthesisUtterance(fullText)), 300);
+      }
+    } catch (err) {
+      UI.removeTyping();
+      const streamRow = document.getElementById('stream-row');
+      if (streamRow) streamRow.remove();
+      UI.addMsg('ai', '❌ خطا: ' + err.message + '\n\nلطفاً دوباره تلاش کنید.');
+      UI.toast('خطا در ارتباط با AI', 'err');
+    }
+    
+    S.gen = false;
+    UI.$('sendBtn').disabled = false;
+  },
+  
+  buildSystemPrompt() {
+    const mode = S.settings.mode;
+    let base = SYSTEMS[mode] || SYSTEMS.assistant;
+    if (mode === 'custom' && S.settings.customSys) base = S.settings.customSys;
+    
+    let profile = '';
+    if (S.profile.name || S.profile.job || S.profile.bio) {
+      profile = '\n\nاطلاعات کاربر:\n';
+      if (S.profile.name) profile += '- نام: ' + S.profile.name + '\n';
+      if (S.profile.job) profile += '- شغل: ' + S.profile.job + '\n';
+      if (S.profile.bio) profile += '- درباره: ' + S.profile.bio + '\n';
+    }
+    
+    return base + profile + '\n\nتاریخ امروز: ' + new Date().toLocaleDateString('fa-IR');
+  },
+  
+  async exportChat() {
+    const chat = this.getCurrent();
+    if (!chat || !chat.messages.length) return UI.toast('چتی نیست', 'wrn');
+    
+    let md = `# ${chat.title}\n\n`;
+    md += `> تاریخ: ${new Date(chat.ts).toLocaleString('fa-IR')}\n\n---\n\n`;
+    chat.messages.forEach(m => {
+      const role = m.role === 'user' ? '👤 **شما**' : '🤖 **دستیار**';
+      md += `${role}:\n\n${m.content}\n\n---\n\n`;
+    });
+    
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = chat.title.replace(/[^\w\s\u0600-\u06FF]/g, '') + '.md';
+    a.click();
+    UI.toast('Markdown دانلود شد', 'ok');
+  },
+  
+  async exportPDF() {
+    const chat = this.getCurrent();
+    if (!chat || !chat.messages.length) return UI.toast('چتی نیست', 'wrn');
+    
+    const el = document.createElement('div');
+    el.style.cssText = 'direction:rtl;font-family:Vazirmatn,Tahoma;padding:30px;color:#111;background:#fff;line-height:1.9;';
+    el.innerHTML = `<h1 style="text-align:center;border-bottom:2px solid #6366f1;padding-bottom:15px;margin-bottom:25px;">${UI.escape(chat.title)}</h1>`;
+    chat.messages.forEach(m => {
+      const role = m.role === 'user' ? '👤 شما' : '🤖 دستیار';
+      const bg = m.role === 'user' ? '#eef2ff' : '#f9fafb';
+      el.innerHTML += `<div style="margin-bottom:18px;padding:14px;border-radius:10px;background:${bg};border:1px solid #e5e7eb;">
+        <strong style="color:#6366f1;">${role}</strong><br><br>
+        <div style="white-space:pre-wrap;">${UI.escape(m.content)}</div>
+      </div>`;
+    });
+    
+    html2pdf().set({
+      margin: 10,
+      filename: chat.title.replace(/[^\w\s\u0600-\u06FF]/g, '') + '.pdf',
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+    UI.toast('PDF دانلود شد', 'ok');
+  },
+  
+  async exportAll() {
+    const data = {
+      version: '10.0',
+      date: new Date().toISOString(),
+      chats: S.chats,
+      settings: S.settings,
+      profile: S.profile
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'AI-OS-Backup-' + Date.now() + '.json';
+    a.click();
+    UI.toast('پشتیبان دانلود شد', 'ok');
+  },
+  
+  async resetAll() {
+    if (!confirm('همه داده‌ها پاک شوند؟ این عمل قابل بازگشت نیست.')) return;
+    await DB.clear('chats');
+    await DB.clear('files');
+    localStorage.clear();
+    location.reload();
+  }
+};
+
+// ═════════ FILES ═════════
+const Files = {
+  async handle(list) {
+    for (const file of list) {
+      const chip = UI.escape(file.name);
+      UI.addChip(chip, 'loading', file.name);
+      try {
+        const content = await this.read(file);
+        const id = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        S.files.push({ id, name: file.name, type: file.type, content, size: file.size });
+        UI.updateChip(file.name, 'ready');
+        UI.toast('✓ ' + file.name, 'ok');
+      } catch (err) {
+        UI.updateChip(file.name, 'error');
+        UI.toast('✗ ' + file.name + ': ' + err.message, 'err');
+      }
+    }
+    UI.$('fileIn').value = '';
+  },
+  
+  async read(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    // Image
+    if (file.type.startsWith('image/')) {
+      const worker = await this.getOCR();
+      const { data } = await worker.recognize(file);
+      return `[OCR IMAGE: ${file.name}]\n${data.text}`;
+    }
+    
+    // PDF
+    if (ext === 'pdf') {
+      const ab = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      let text = `[PDF: ${file.name} - ${pdf.numPages} pages]\n\n`;
+      const maxP = Math.min(pdf.numPages, 30);
+      for (let i = 1; i <= maxP; i++) {
+        const page = await pdf.getPage(i);
+        const tc = await page.getTextContent();
+        const pageText = tc.items.map(x => x.str).join(' ');
+        if (pageText.trim().length < 50) {
+          // Scanned page, use OCR
+          const canvas = document.createElement('canvas');
+          const viewport = page.getViewport({ scale: 2 });
+          canvas.width = viewport.width; canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          const worker = await this.getOCR();
+          const { data } = await worker.recognize(canvas);
+          text += `\n=== Page ${i} (OCR) ===\n${data.text}\n`;
+        } else {
+          text += `\n=== Page ${i} ===\n${pageText}\n`;
+        }
+      }
+      return text;
+    }
+    
+    // Word
+    if (ext === 'docx') {
+      const ab = await file.arrayBuffer();
+      const res = await mammoth.extractRawText({ arrayBuffer: ab });
+      return `[WORD: ${file.name}]\n${res.value}`;
+    }
+    
+    // Excel
+    if (ext === 'xlsx' || ext === 'xls') {
+      const ab = await file.arrayBuffer();
+      const wb = XLSX.read(new Uint8Array(ab), { type: 'array' });
+      let out = `[EXCEL: ${file.name}]\nSheets: ${wb.SheetNames.join(', ')}\n\n`;
+      wb.SheetNames.forEach(name => {
+        out += `\n=== Sheet: ${name} ===\n`;
+        out += XLSX.utils.sheet_to_csv(wb.Sheets[name]);
+      });
+      return out;
+    }
+    
+    // ZIP
+    if (ext === 'zip') {
+      const zip = await JSZip.loadAsync(file);
+      let out = `[ZIP: ${file.name}]\nFiles:\n`;
+      const entries = [];
+      zip.forEach((path, entry) => entries.push({ path, entry }));
+      for (const { path, entry } of entries) {
+        out += `• ${path} (${entry.dir ? 'folder' : 'file'})\n`;
+        if (!entry.dir && !path.match(/\.(png|jpg|jpeg|gif|exe|dll|bin)$/i)) {
+          try {
+            const content = await entry.async('text');
+            if (content.length < 5000) out += `  Content:\n${content.substring(0, 2000)}\n`;
+          } catch (e) {}
+        }
+      }
+      return out;
+    }
+    
+    // Text/code
+    if (file.size > 2 * 1024 * 1024) throw new Error('فایل بزرگ‌تر از 2MB');
+    return `[${ext.toUpperCase()}: ${file.name}]\n${await file.text()}`;
+  },
+  
+  async getOCR() {
+    if (!S.ocrWorker) {
+      UI.toast('بارگذاری OCR فارسی...', 'wrn');
+      S.ocrWorker = await Tesseract.createWorker(S.settings.ocrLang);
+    }
+    return S.ocrWorker;
+  }
+};
+
+UI.renderChips = () => {
+  const el = UI.$('chips');
+  el.innerHTML = '';
+  S.files.forEach(f => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.innerHTML = `📄 ${UI.escape(f.name)} <button onclick="Files.remove('${f.id}')">×</button>`;
+    el.appendChild(c);
+  });
+};
+
+UI.addChip = (name, status, key) => {
+  const el = UI.$('chips');
+  const c = document.createElement('div');
+  c.className = 'chip';
+  c.dataset.key = key;
+  const icon = status === 'loading' ? '⏳' : status === 'error' ? '❌' : '✅';
+  c.innerHTML = `${icon} ${name}`;
+  el.appendChild(c);
+};
+
+UI.updateChip = (key, status) => {
+  const el = UI.$('chips');
+  const c = Array.from(el.children).find(x => x.dataset.key === key);
+  if (!c) return;
+  const icon = status === 'ready' ? '✅' : '❌';
+  const name = c.textContent.substring(2).trim();
+  c.innerHTML = `${icon} ${name} <button onclick="Files.remove(this.closest('.chip'))">×</button>`;
+};
+
+Files.remove = (chipOrId) => {
+  if (typeof chipOrId === 'string') {
+    S.files = S.files.filter(f => f.id !== chipOrId);
+  } else {
+    chipOrId.remove();
+    return;
+  }
+  UI.renderChips();
+};
+
+// ═════════ VOICE ═════════
+const Voice = {
+  rec: null,
+  on: false,
+  
+  init() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { UI.$('micBtn').style.display = 'none'; return; }
+    this.rec = new SR();
+    this.rec.lang = 'fa-IR';
+    this.rec.continuous = false;
+    this.rec.interimResults = true;
+    this.rec.onstart = () => { this.on = true; UI.$('micBtn').classList.add('rec'); UI.toast('🎤 گوش می‌دهم...', 'ok'); };
+    this.rec.onend = () => { this.on = false; UI.$('micBtn').classList.remove('rec'); };
+    this.rec.onerror = e => { UI.toast('خطای صوتی: ' + e.error, 'err'); this.on = false; UI.$('micBtn').classList.remove('rec'); };
+    this.rec.onresult = e => {
+      let txt = '';
+      for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+      UI.$('inp').value = txt;
+      UI.$('inp').dispatchEvent(new Event('input'));
+    };
+  },
+  
+  toggle() {
+    if (!this.rec) return UI.toast('صوت پشتیبانی نمی‌شود', 'err');
+    if (this.on) this.rec.stop();
+    else this.rec.start();
+  }
+};
+
+// ═════════ SETTINGS ═════════
+const Settings = {
+  load() {
+    UI.$('sysMode').value = S.settings.mode;
+    UI.$('customSys').value = S.settings.customSys || '';
+    UI.$('tempR').value = S.settings.temperature;
+    UI.$('tempV').textContent = S.settings.temperature;
+    UI.$('tokR').value = S.settings.maxTokens;
+    UI.$('tokV').textContent = S.settings.maxTokens;
+    UI.$('autoTTS').value = S.settings.autoTTS;
+    UI.$('ocrLang').value = S.settings.ocrLang;
+    UI.$('customSysRow').style.display = S.settings.mode === 'custom' ? 'block' : 'none';
+  },
+  
+  save() {
+    S.settings.mode = UI.$('sysMode').value;
+    S.settings.customSys = UI.$('customSys').value;
+    S.settings.temperature = parseFloat(UI.$('tempR').value);
+    S.settings.maxTokens = parseInt(UI.$('tokR').value);
+    S.settings.autoTTS = parseInt(UI.$('autoTTS').value);
+    S.settings.ocrLang = UI.$('ocrLang').value;
+    UI.$('ttsBtn').classList.toggle('active', S.settings.autoTTS === 1);
+    this.persist();
+    UI.closeModal('settings');
+    UI.toast('✓ ذخیره شد', 'ok');
+    // Reset OCR worker if lang changed
+    if (S.ocrWorker) { S.ocrWorker.terminate(); S.ocrWorker = null; }
+  },
+  
+  persist() {
+    localStorage.setItem('ai_settings_v10', JSON.stringify(S.settings));
+  }
+};
+
+// ═════════ PROFILE ═════════
+const Profile = {
+  load() {
+    UI.$('userName').value = S.profile.name || '';
+    UI.$('userJob').value = S.profile.job || '';
+    UI.$('userBio').value = S.profile.bio || '';
+  },
+  
+  save() {
+    S.profile.name = UI.$('userName').value;
+    S.profile.job = UI.$('userJob').value;
+    S.profile.bio = UI.$('userBio').value;
+    localStorage.setItem('ai_profile_v10', JSON.stringify(S.profile));
+    UI.closeModal('profile');
+    UI.toast('✓ پروفایل ذخیره شد', 'ok');
+  }
+};
+
+// ═════════ TOOLS ═════════
+const Tools = {
+  imageGen() {
+    UI.openModal('imggen');
+    UI.$('imgResult').innerHTML = '';
+  },
+  
+  async generateImage() {
+    const prompt = UI.$('imgPrompt').value.trim();
+    if (!prompt) return UI.toast('توضیح تصویر را وارد کنید', 'wrn');
+    const model = UI.$('imgModel').value;
+    const btn = UI.$('imgGenBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ در حال تولید...';
+    UI.$('imgResult').innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;">در حال ساخت تصویر...</div>';
+    
+    try {
+      const img = await puter.ai.txt2img(prompt, model);
+      const url = URL.createObjectURL(img);
+      UI.$('imgResult').innerHTML = `
+        <img src="${url}" style="max-width:100%;border-radius:10px;border:1px solid var(--border);">
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <a href="${url}" download="ai-image.png" class="btn-p" style="text-decoration:none;text-align:center;">⬇ دانلود</a>
+          <button class="btn-g" onclick="Tools.sendImageToChat('${url}','${UI.escape(prompt)}')">💬 ارسال به چت</button>
+        </div>
+      `;
+      UI.toast('✓ تصویر تولید شد', 'ok');
+    } catch (err) {
+      UI.$('imgResult').innerHTML = `<div style="color:var(--danger);">❌ خطا: ${err.message}</div>`;
+    }
+    
+    btn.disabled = false;
+    btn.textContent = '🎨 تولید';
+  },
+  
+  sendImageToChat(url, prompt) {
+    const chat = App.getCurrent();
+    chat.messages.push({ role: 'ai', content: '🎨 تصویر تولید شد:\n\n' + prompt, image: url, ts: Date.now() });
+    DB.put('chats', chat);
+    UI.closeModal('imggen');
+    UI.renderChat(chat);
+    UI.toast('✓ به چت اضافه شد', 'ok');
+  },
+  
+  async calculator() {
+    const expr = prompt('عبارت ریاضی یا سوال محاسباتی:');
+    if (!expr) return;
+    UI.$('inp').value = `محاسبه کن و مرحله به مرحله توضیح بده: ${expr}`;
+    App.send();
+  },
+  
+  async translate() {
+    const text = prompt('متن برای ترجمه:');
+    if (!text) return;
+    const lang = prompt('به چه زبانی ترجمه شود؟ (مثلاً: انگلیسی، فارسی، آلمانی)', 'انگلیسی');
+    if (!lang) return;
+    UI.$('inp').value = `ترجمه کن به ${lang}:\n\n${text}`;
+    App.send();
+  },
+  
+  async summarize() {
+    const chat = App.getCurrent();
+    const lastAI = [...chat.messages].reverse().find(m => m.role === 'ai');
+    if (!lastAI) return UI.toast('متنی برای خلاصه‌سازی نیست', 'wrn');
+    UI.$('inp').value = `خلاصه‌ای کوتاه و ساختاریافته از این متن ارائه بده:\n\n${lastAI.content}`;
+    App.send();
+  },
+  
+  async searchWeb() {
+    const q = prompt('چه چیزی را جستجو کنم؟');
+    if (!q) return;
+    UI.$('inp').value = `درباره "${q}" جستجو کن و اطلاعات دقیق و به‌روز ارائه بده. اگر نمی‌دانی بگو.`;
+    App.send();
+  },
+  
+  async codeRun() {
+    const code = prompt('کد JavaScript برای اجرا:');
+    if (!code) return;
+    let result;
+    try {
+      const logs = [];
+      const fakeConsole = { log: (...a) => logs.push(a.map(String).join(' ')), error: (...a) => logs.push('ERROR: ' + a.join(' ')) };
+      const fn = new Function('console', code);
+      const ret = fn(fakeConsole);
+      result = logs.join('\n') + (ret !== undefined ? '\n\nReturn: ' + String(ret) : '');
+      UI.addMsg('user', '💻 کد اجرا شد:\n```\n' + code + '\n```');
+      UI.addMsg('ai', '✓ نتیجه اجرا:\n```\n' + result + '\n```');
+      const chat = App.getCurrent();
+      chat.messages.push({ role: 'user', content: '💻 اجرای کد: ' + code, ts: Date.now() });
+      chat.messages.push({ role: 'ai', content: '✓ نتیجه:\n```\n' + result + '\n```', ts: Date.now() });
+      DB.put('chats', chat);
+    } catch (err) {
+      UI.toast('خطای اجرا: ' + err.message, 'err');
+    }
+  }
+};
+
+// ═════════ KEYBOARD SHORTCUTS ═════════
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); App.newChat(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); UI.$('inp').focus(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); UI.toggleSidebar(); }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-ov.active').forEach(m => m.classList.remove('active'));
+    UI.closeSidebarMobile();
+  }
+});
+
+// ═════════ START ═════════
+window.addEventListener('load', () => App.init());
+
+// Preload voices for TTS
+if (window.speechSynthesis) {
+  speechSynthesis.onvoiceschanged = () => {};
+  speechSynthesis.getVoices();
+}
+</script>
+</body>
+</html>
